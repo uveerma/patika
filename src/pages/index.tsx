@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import { fetchData } from "@/utils/helpers/fetchData";
+import { truncate } from "@/utils/helpers/truncate";
 import { update } from "@/utils/helpers/update";
 import {
   Box,
@@ -8,6 +9,7 @@ import {
   Flex,
   Grid,
   GridItem,
+  Link,
   Text,
 } from "@chakra-ui/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -21,7 +23,7 @@ const Home: NextPage = () => {
   const [done, setDone] = useState<any[]>([]);
   const [isLoading, setLoading] = useState<boolean>(false);
 
-  const { data, refetch } = useQuery(["metadata"], fetchData, {
+  const { refetch } = useQuery(["metadata"], fetchData, {
     onSuccess: (data) => {
       setDone([]);
       setPending([]);
@@ -56,7 +58,6 @@ const Home: NextPage = () => {
       });
     },
   });
-  console.log(data);
 
   const sortedData = useMemo(() => {
     return {
@@ -69,26 +70,16 @@ const Home: NextPage = () => {
     return d.fields.Wallet;
   });
 
-  const { mutate } = useMutation(
-    ["airdrop"],
-    async (owner: string) => {
-      const { data } = await axios.post("/api/airdrop", {
-        owner: owner,
-      });
+  const { mutate } = useMutation(["airdrop"], async (owner: string) => {
+    const { data } = await axios.post("/api/airdrop", {
+      owner: owner,
+    });
 
-      return data;
-    },
-    {
-      onSuccess: (data) => {
-        console.log(data);
-      },
-    }
-  );
+    return data;
+  });
 
   const { mutate: updateMut } = useMutation(["update"], update, {
     onSuccess: (data) => {
-      console.log(data);
-
       setLoading(false);
       refetch();
       toast.success("Successfully airdropped NFTs");
@@ -133,7 +124,7 @@ const Home: NextPage = () => {
                       id: d.id,
                       fields: {
                         Email: d.fields.Email,
-                        Name: d.fields.Name,
+                        Name: "My NFT",
                         Status: "Done",
                         Wallet: d.fields.Wallet,
                       },
@@ -142,6 +133,7 @@ const Home: NextPage = () => {
                 );
               }}
               isLoading={isLoading}
+              isDisabled={pendingArray.length === 0}
             >
               AIRDROP
             </Button>
@@ -159,9 +151,9 @@ const Home: NextPage = () => {
           <Flex w="50%" direction="column" gap="2">
             {sortedData.pending.map((d) => (
               <>
-                <Flex key={d.id} w="full" gap="2">
-                  <Text w="10%">{d.fields.Name}</Text>
-                  <Text w="90%">{d.fields.Wallet}</Text>
+                <Flex key={d.id} w="full" gap="10" justifyContent="center">
+                  <Text>{d.fields.Name}</Text>
+                  <Text>{truncate(d.fields.Wallet)}</Text>
                 </Flex>
                 <Divider />
               </>
@@ -171,9 +163,14 @@ const Home: NextPage = () => {
           <Flex w="50%" direction="column" gap="2">
             {sortedData.done.map((d) => (
               <>
-                <Flex key={d.id} w="full" gap="2">
-                  <Text w="10%">{d.fields.Name}</Text>
-                  <Text w="90%">{d.fields.Wallet}</Text>
+                <Flex key={d.id} w="full" gap="10" justifyContent="center">
+                  <Text>{d.fields.Name}</Text>
+                  <Link
+                    href={`https://solana.fm/address/${d.fields.Wallet}?cluster=devnet`}
+                    isExternal
+                  >
+                    {truncate(d.fields.Wallet)}
+                  </Link>
                 </Flex>
                 <Divider />
               </>
