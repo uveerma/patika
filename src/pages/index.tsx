@@ -145,11 +145,7 @@ const Home: NextPage = () => {
                     return {
                       id: d.id,
                       fields: {
-                        Email: d.fields.Email,
-                        Name: "My NFT",
                         Status: "Done",
-                        Wallet: d.fields.Wallet,
-                        Number: d.fields.Number,
                       },
                     };
                   })
