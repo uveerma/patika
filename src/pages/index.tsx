@@ -80,7 +80,15 @@ const Home: NextPage = () => {
     };
   });
 
-  const { mutate } = useMutation(
+  const { mutate: updateMut } = useMutation(["update"], update, {
+    onSuccess: (data) => {
+      setLoading(false);
+      refetch();
+      toast.success("Successfully airdropped NFTs");
+    },
+  });
+
+  const { mutateAsync } = useMutation(
     ["airdrop"],
     async ({ owner, id }: { owner: string; id: string | number }) => {
       const file = await elementHelper(ref, id);
@@ -90,17 +98,18 @@ const Home: NextPage = () => {
         uri: file,
       });
 
+      updateMut([
+        {
+          id: id,
+          fields: {
+            Status: "Done",
+          },
+        },
+      ]);
+
       return data;
     }
   );
-
-  const { mutate: updateMut } = useMutation(["update"], update, {
-    onSuccess: (data) => {
-      setLoading(false);
-      refetch();
-      toast.success("Successfully airdropped NFTs");
-    },
-  });
 
   return (
     <Box minH="100vh" w="full" display="flex" bg="#fafafa" flexDir="column">
@@ -132,24 +141,15 @@ const Home: NextPage = () => {
               onClick={async () => {
                 setLoading(true);
 
-                pendingArray.forEach((d) => {
+                pendingArray.forEach(async (d) => {
                   setId(d.id);
-                  mutate({
+                  await mutateAsync({
                     owner: d.owner,
                     id: d.id,
                   });
                 });
 
-                updateMut(
-                  sortedData.pending.map((d) => {
-                    return {
-                      id: d.id,
-                      fields: {
-                        Status: "Done",
-                      },
-                    };
-                  })
-                );
+                setLoading(false);
               }}
               isLoading={isLoading}
               isDisabled={pendingArray.length === 0}
