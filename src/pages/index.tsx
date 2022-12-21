@@ -144,7 +144,7 @@ const Home: NextPage = () => {
                 setLoading(true);
 
                 pendingArray.forEach(async (d) => {
-                  setId(d.id);
+                  setId(d.number);
                   await mutateAsync({
                     id: d.id,
                     owner: d.owner,
