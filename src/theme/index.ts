@@ -4,6 +4,7 @@ const theme = extendTheme({
   colors: {},
   fonts: {
     body: "Inter, sans-serif",
+    clash: "Clash Display, sans-serif",
   },
 });
 

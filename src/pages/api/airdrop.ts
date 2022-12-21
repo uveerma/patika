@@ -1,9 +1,8 @@
-import { CandyPay } from "@candypay/sdk";
 import { keypairIdentity, Metaplex } from "@metaplex-foundation/js";
 import * as anchor from "@project-serum/anchor";
 import { clusterApiUrl, Connection, PublicKey } from "@solana/web3.js";
 import base58 from "bs58";
-import { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
+import { NextApiHandler } from "next";
 
 const payer = anchor.web3.Keypair.fromSecretKey(
   base58.decode(process.env.PAYER_SECRET_KEY!)
@@ -12,25 +11,21 @@ const payer = anchor.web3.Keypair.fromSecretKey(
 const connection = new Connection(clusterApiUrl("devnet"));
 const metaplex = new Metaplex(connection).use(keypairIdentity(payer));
 
-const sdk = new CandyPay();
-
-const handler: NextApiHandler = async (
-  req: NextApiRequest,
-  res: NextApiResponse
-) => {
-  const { owner } = req.body;
+const handler: NextApiHandler = async (req, res) => {
+  const { owner, uri } = req.body;
 
   if (owner) {
     try {
       const { nft } = await metaplex.nfts().create({
         name: "My NFT",
-        uri: "https://example.com/my-nft",
+        uri: uri,
         sellerFeeBasisPoints: 250, // 2.5%
         tokenOwner: new PublicKey(owner),
       });
 
       return res.status(200).json({
         message: "NFT created",
+        ...nft,
       });
     } catch (err) {
       console.log(err);

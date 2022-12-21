@@ -1,4 +1,6 @@
 import Header from "@/components/Header";
+import { NFTCard } from "@/components/stuff";
+import { elementHelper } from "@/utils/helpers/element";
 import { fetchData } from "@/utils/helpers/fetchData";
 import { truncate } from "@/utils/helpers/truncate";
 import { update } from "@/utils/helpers/update";
@@ -11,17 +13,20 @@ import {
   GridItem,
   Link,
   Text,
+  Tooltip,
 } from "@chakra-ui/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import type { NextPage } from "next";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 const Home: NextPage = () => {
   const [pending, setPending] = useState<any[]>([]);
   const [done, setDone] = useState<any[]>([]);
   const [isLoading, setLoading] = useState<boolean>(false);
+  const [id, setId] = useState<string>("1");
+  const ref = useRef(null);
 
   const { refetch } = useQuery(["metadata"], fetchData, {
     onSuccess: (data) => {
@@ -38,6 +43,7 @@ const Home: NextPage = () => {
                 Name: item.fields.Name,
                 Status: item.fields.Status,
                 Wallet: item.fields.Wallet,
+                Number: item.fields.Number,
               },
             },
           ]);
@@ -51,6 +57,7 @@ const Home: NextPage = () => {
                 Name: item.fields.Name,
                 Status: item.fields.Status,
                 Wallet: item.fields.Wallet,
+                Number: item.fields.Number,
               },
             },
           ]);
@@ -67,16 +74,25 @@ const Home: NextPage = () => {
   }, [done, pending]);
 
   const pendingArray = sortedData.pending.map((d) => {
-    return d.fields.Wallet;
+    return {
+      id: d.fields.Number,
+      owner: d.fields.Wallet,
+    };
   });
 
-  const { mutate } = useMutation(["airdrop"], async (owner: string) => {
-    const { data } = await axios.post("/api/airdrop", {
-      owner: owner,
-    });
+  const { mutate } = useMutation(
+    ["airdrop"],
+    async ({ owner, id }: { owner: string; id: string | number }) => {
+      const file = await elementHelper(ref, id);
 
-    return data;
-  });
+      const { data } = await axios.post("/api/airdrop", {
+        owner: owner,
+        uri: file,
+      });
+
+      return data;
+    }
+  );
 
   const { mutate: updateMut } = useMutation(["update"], update, {
     onSuccess: (data) => {
@@ -87,8 +103,9 @@ const Home: NextPage = () => {
   });
 
   return (
-    <Box minH="100vh" w="full" display="flex" bg="#fafafa">
+    <Box minH="100vh" w="full" display="flex" bg="#fafafa" flexDir="column">
       <Header />
+
       <Flex flexDir="column" w="full" fontWeight="500" px="24" py="32">
         <Grid
           bg="gray.100"
@@ -114,8 +131,13 @@ const Home: NextPage = () => {
               }}
               onClick={async () => {
                 setLoading(true);
+
                 pendingArray.forEach((d) => {
-                  mutate(d);
+                  setId(d.id);
+                  mutate({
+                    owner: d.owner,
+                    id: d.id,
+                  });
                 });
 
                 updateMut(
@@ -127,6 +149,7 @@ const Home: NextPage = () => {
                         Name: "My NFT",
                         Status: "Done",
                         Wallet: d.fields.Wallet,
+                        Number: d.fields.Number,
                       },
                     };
                   })
@@ -153,7 +176,16 @@ const Home: NextPage = () => {
               <>
                 <Flex key={d.id} w="full" gap="10" justifyContent="center">
                   <Text>{d.fields.Name}</Text>
-                  <Text>{truncate(d.fields.Wallet)}</Text>
+                  <Tooltip label="Click to Copy">
+                    <Text
+                      cursor="pointer"
+                      onClick={() => {
+                        navigator.clipboard.writeText(d.fields.Wallet);
+                      }}
+                    >
+                      {truncate(d.fields.Wallet)}
+                    </Text>
+                  </Tooltip>
                 </Flex>
                 <Divider />
               </>
@@ -178,6 +210,10 @@ const Home: NextPage = () => {
           </Flex>
         </Flex>
       </Flex>
+
+      <Box opacity="0%">
+        <NFTCard id={id} reference={ref} />
+      </Box>
     </Box>
   );
 };
