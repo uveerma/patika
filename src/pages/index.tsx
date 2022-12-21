@@ -19,7 +19,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import type { NextPage } from "next";
 import { useMemo, useRef, useState } from "react";
-import toast from "react-hot-toast";
 
 const Home: NextPage = () => {
   const [pending, setPending] = useState<any[]>([]);
@@ -75,23 +74,26 @@ const Home: NextPage = () => {
 
   const pendingArray = sortedData.pending.map((d) => {
     return {
-      id: d.fields.Number,
+      id: d.id,
+      number: d.fields.Number,
       owner: d.fields.Wallet,
     };
   });
 
-  const { mutate: updateMut } = useMutation(["update"], update, {
-    onSuccess: (data) => {
-      setLoading(false);
-      refetch();
-      toast.success("Successfully airdropped NFTs");
-    },
-  });
+  const { mutate: updateMut } = useMutation(["update"], update, {});
 
   const { mutateAsync } = useMutation(
     ["airdrop"],
-    async ({ owner, id }: { owner: string; id: string | number }) => {
-      const file = await elementHelper(ref, id);
+    async ({
+      id,
+      owner,
+      number,
+    }: {
+      id: string;
+      owner: string;
+      number: string | number;
+    }) => {
+      const file = await elementHelper(ref, number);
 
       const { data } = await axios.post("/api/airdrop", {
         owner: owner,
@@ -144,11 +146,13 @@ const Home: NextPage = () => {
                 pendingArray.forEach(async (d) => {
                   setId(d.id);
                   await mutateAsync({
-                    owner: d.owner,
                     id: d.id,
+                    owner: d.owner,
+                    number: d.number,
                   });
                 });
 
+                refetch();
                 setLoading(false);
               }}
               isLoading={isLoading}
