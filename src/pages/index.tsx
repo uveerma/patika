@@ -20,10 +20,15 @@ import axios from "axios";
 import type { NextPage } from "next";
 import { useMemo, useRef, useState } from "react";
 
+interface IParams {
+  id: string;
+  owner: string;
+  number: string | number;
+}
+
 const Home: NextPage = () => {
   const [pending, setPending] = useState<any[]>([]);
   const [done, setDone] = useState<any[]>([]);
-  const [isLoading, setLoading] = useState<boolean>(false);
   const [id, setId] = useState<string>("1");
   const ref = useRef(null);
 
@@ -80,36 +85,37 @@ const Home: NextPage = () => {
     };
   });
 
-  const { mutate: updateMut } = useMutation(["update"], update, {});
+  const { mutate: updateMut } = useMutation(["update"], update);
 
-  const { mutateAsync } = useMutation(
-    ["airdrop"],
-    async ({
-      id,
-      owner,
-      number,
-    }: {
-      id: string;
-      owner: string;
-      number: string | number;
-    }) => {
-      const file = await elementHelper(ref, number);
+  const { mutateAsync, isLoading } = useMutation(
+    ["airdropAll"],
+    async (arr: IParams[]) => {
+      for (let i = 0; i < arr.length; i++) {
+        const d = arr[i];
+        const file = await elementHelper(ref, d.number);
 
-      const { data } = await axios.post("/api/airdrop", {
-        owner: owner,
-        uri: file,
-      });
+        const { data } = await axios.post("/api/airdrop", {
+          owner: d.owner,
+          uri: file,
+        });
 
-      updateMut([
-        {
-          id: id,
-          fields: {
-            Status: "Done",
+        updateMut([
+          {
+            id: d.id,
+            fields: {
+              Status: "Done",
+            },
           },
-        },
-      ]);
+        ]);
 
-      return data;
+        return data;
+      }
+    },
+    {
+      onSuccess: (data) => {
+        console.log(data);
+        refetch();
+      },
     }
   );
 
@@ -141,19 +147,7 @@ const Home: NextPage = () => {
                 bgColor: "purple.600",
               }}
               onClick={async () => {
-                setLoading(true);
-
-                pendingArray.forEach(async (d) => {
-                  setId(d.number);
-                  await mutateAsync({
-                    id: d.id,
-                    owner: d.owner,
-                    number: d.number,
-                  });
-                });
-
-                refetch();
-                setLoading(false);
+                await mutateAsync(pendingArray);
               }}
               isLoading={isLoading}
               isDisabled={pendingArray.length === 0}
@@ -173,39 +167,33 @@ const Home: NextPage = () => {
         >
           <Flex w="50%" direction="column" gap="2">
             {sortedData.pending.map((d) => (
-              <>
-                <Flex key={d.id} w="full" gap="10" justifyContent="center">
-                  <Text>{d.fields.Name}</Text>
-                  <Tooltip label="Click to Copy">
-                    <Text
-                      cursor="pointer"
-                      onClick={() => {
-                        navigator.clipboard.writeText(d.fields.Wallet);
-                      }}
-                    >
-                      {truncate(d.fields.Wallet)}
-                    </Text>
-                  </Tooltip>
-                </Flex>
-                <Divider />
-              </>
+              <Flex key={d.id} w="full" gap="10" justifyContent="center">
+                <Text>{d.fields.Name}</Text>
+                <Tooltip label="Click to Copy">
+                  <Text
+                    cursor="pointer"
+                    onClick={() => {
+                      navigator.clipboard.writeText(d.fields.Wallet);
+                    }}
+                  >
+                    {truncate(d.fields.Wallet)}
+                  </Text>
+                </Tooltip>
+              </Flex>
             ))}
           </Flex>
           <Divider orientation="vertical" />
           <Flex w="50%" direction="column" gap="2">
             {sortedData.done.map((d) => (
-              <>
-                <Flex key={d.id} w="full" gap="10" justifyContent="center">
-                  <Text>{d.fields.Name}</Text>
-                  <Link
-                    href={`https://solana.fm/address/${d.fields.Wallet}?cluster=devnet`}
-                    isExternal
-                  >
-                    {truncate(d.fields.Wallet)}
-                  </Link>
-                </Flex>
-                <Divider />
-              </>
+              <Flex key={d.id} w="full" gap="10" justifyContent="center">
+                <Text>{d.fields.Name}</Text>
+                <Link
+                  href={`https://solana.fm/address/${d.fields.Wallet}?cluster=devnet`}
+                  isExternal
+                >
+                  {truncate(d.fields.Wallet)}
+                </Link>
+              </Flex>
             ))}
           </Flex>
         </Flex>

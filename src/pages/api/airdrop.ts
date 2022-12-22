@@ -14,28 +14,22 @@ const metaplex = new Metaplex(connection).use(keypairIdentity(payer));
 const handler: NextApiHandler = async (req, res) => {
   const { owner, uri } = req.body;
 
-  if (owner) {
-    try {
-      const { nft } = await metaplex.nfts().create({
-        name: "My NFT",
-        uri: uri,
-        sellerFeeBasisPoints: 250, // 2.5%
-        tokenOwner: new PublicKey(owner),
-      });
+  try {
+    const { nft } = await metaplex.nfts().create({
+      name: "My NFT",
+      uri: uri,
+      sellerFeeBasisPoints: 250,
+      tokenOwner: new PublicKey(owner),
+    });
 
-      return res.status(200).json({
-        message: "NFT created",
-        ...nft,
-      });
-    } catch (err) {
-      console.log(err);
-      return res.status(500).json({
-        message: "Error",
-      });
-    }
-  } else {
-    return res.status(400).json({
-      message: "Missing Params",
+    return res.status(200).json({
+      message: "NFT created",
+      ...nft,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      message: "Error",
     });
   }
 };
