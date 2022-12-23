@@ -16,7 +16,7 @@ const handler: NextApiHandler = async (req, res) => {
 
   try {
     const { nft } = await metaplex.nfts().create({
-      name: "Patika NFT",
+      name: "Solana Practicum Finisher",
       uri: uri,
       sellerFeeBasisPoints: 0,
       tokenOwner: new PublicKey(owner),

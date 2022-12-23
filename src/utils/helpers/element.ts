@@ -19,16 +19,14 @@ const elementHelper = async (
   const img_url = imgBB.data.data.url;
 
   const metadata = {
-    name: `Patika NFT #${id}`,
-    symbol: "PATI",
-    description: "Course completion NFT",
-    seller_fee_basis_points: 0,
-    "Discord ID": discord,
+    name: `Solana Practicum Finisher #${id}`,
+    symbol: "",
+    description: "NFT from Solana and Patika for all successful finishers of the Solana Practicum in Turkey.",
     image: img_url,
     attributes: [
       {
-        trait_type: "artist",
-        value: "@aintweallgods",
+        trait_type: "Discord ID",
+        value: `${discord}`,
       },
     ],
     properties: {
