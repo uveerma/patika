@@ -1,6 +1,7 @@
 import { client } from "@/lib/clients/web3Storage";
 import html2canvas from "html2canvas";
 import { MutableRefObject } from "react";
+import axios from "axios";
 
 const elementHelper = async (
   ref: MutableRefObject<any>,
@@ -8,10 +9,12 @@ const elementHelper = async (
 ) => {
   const url = (await html2canvas(ref.current)).toDataURL("image/png");
   const blob = await fetch(url).then((r) => r.blob());
-  const file = new File([blob], "image.png", { type: "image/png" });
-
-  const cid = await client.put([file]);
-  const img_url = `https://cloudflare-ipfs.com/ipfs/${cid}/image.png`;
+  const data = new FormData();
+  data.append("image", blob);
+  const imgBB = await axios.post('https://api.imgbb.com/1/upload?key=822079d074dfd089764b99744dadefc4', data);
+  console.log(imgBB)
+  console.log(imgBB.data.data.url)
+ const img_url= imgBB.data.data.url;
 
   const metadata = {
     name: `Patika NFT #${id}`,
