@@ -1,26 +1,29 @@
 import { client } from "@/lib/clients/web3Storage";
+import axios from "axios";
 import html2canvas from "html2canvas";
 import { MutableRefObject } from "react";
-import axios from "axios";
 
 const elementHelper = async (
   ref: MutableRefObject<any>,
-  id: number | string
+  id: number | string,
+  discord: string
 ) => {
   const url = (await html2canvas(ref.current)).toDataURL("image/png");
   const blob = await fetch(url).then((r) => r.blob());
   const data = new FormData();
   data.append("image", blob);
-  const imgBB = await axios.post('https://api.imgbb.com/1/upload?key=822079d074dfd089764b99744dadefc4', data);
-  console.log(imgBB)
-  console.log(imgBB.data.data.url)
- const img_url= imgBB.data.data.url;
+  const imgBB = await axios.post(
+    "https://api.imgbb.com/1/upload?key=822079d074dfd089764b99744dadefc4",
+    data
+  );
+  const img_url = imgBB.data.data.url;
 
   const metadata = {
     name: `Patika NFT #${id}`,
     symbol: "PATI",
     description: "Course completion NFT",
     seller_fee_basis_points: 0,
+    "Discord ID": discord,
     image: img_url,
     attributes: [
       {

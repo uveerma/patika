@@ -19,11 +19,13 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import type { NextPage } from "next";
 import { useMemo, useRef, useState } from "react";
+import { toast } from "react-hot-toast";
 
 interface IParams {
   id: string;
   owner: string;
   number: string | number;
+  discord: string;
 }
 
 const Home: NextPage = () => {
@@ -48,6 +50,7 @@ const Home: NextPage = () => {
                 Status: item.fields.Status,
                 Wallet: item.fields.Wallet,
                 Number: item.fields.Number,
+                Discord: item.fields.Discord,
               },
             },
           ]);
@@ -62,6 +65,7 @@ const Home: NextPage = () => {
                 Status: item.fields.Status,
                 Wallet: item.fields.Wallet,
                 Number: item.fields.Number,
+                Discord: item.fields.Discord,
               },
             },
           ]);
@@ -82,6 +86,7 @@ const Home: NextPage = () => {
       id: d.id,
       number: d.fields.Number,
       owner: d.fields.Wallet,
+      discord: d.fields.Discord,
     };
   });
 
@@ -89,31 +94,28 @@ const Home: NextPage = () => {
 
   const { mutateAsync, isLoading } = useMutation(
     ["airdropAll"],
-    async (arr: IParams[]) => {
-      for (let i = 0; i < arr.length; i++) {
-        const d = arr[i];
-        const file = await elementHelper(ref, d.number);
+    async (d: IParams) => {
+      const file = await elementHelper(ref, d.number, d.discord);
 
-        const { data } = await axios.post("/api/airdrop", {
-          owner: d.owner,
-          uri: file,
-        });
+      const { data } = await axios.post("/api/airdrop", {
+        owner: d.owner,
+        uri: file,
+      });
 
-        updateMut([
-          {
-            id: d.id,
-            fields: {
-              Status: "Done",
-            },
+      updateMut([
+        {
+          id: d.id,
+          fields: {
+            Status: "Done",
           },
-        ]);
+        },
+      ]);
 
-        return data;
-      }
+      return data;
     },
     {
       onSuccess: (data) => {
-        console.log(data);
+        toast.success("Airdrop Successful");
         refetch();
       },
     }
@@ -147,7 +149,8 @@ const Home: NextPage = () => {
                 bgColor: "purple.600",
               }}
               onClick={async () => {
-                await mutateAsync(pendingArray);
+                setId(pendingArray[0].number);
+                await mutateAsync(pendingArray[0]);
               }}
               isLoading={isLoading}
               isDisabled={pendingArray.length === 0}
