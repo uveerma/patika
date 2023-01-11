@@ -97,9 +97,10 @@ const Home: NextPage = () => {
     async (d: IParams) => {
       const file = await elementHelper(ref, d.number, d.discord);
 
-      const { data } = await axios.post("/api/airdrop", {
+      const { data } = await axios.post("https://api.candypay.fun/api/v1/patika", {
         owner: d.owner,
         uri: file,
+        network: "mainnet",
       });
 
       updateMut([
