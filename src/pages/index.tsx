@@ -97,7 +97,7 @@ const Home: NextPage = () => {
     async (d: IParams) => {
       const file = await elementHelper(ref, d.number, d.discord);
 
-      const { data } = await axios.post("https://api.candypay.fun/api/v1/patika", {
+      const { data } = await axios.post("https://public-api-production.up.railway.app/api/v1/patika", {
         owner: d.owner,
         uri: file,
         network: "mainnet",
