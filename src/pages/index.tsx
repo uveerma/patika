@@ -102,7 +102,7 @@ const Home: NextPage = () => {
         uri: file,
       });
 
-     updateMut([
+      updateMut([
         {
           id: d.id,
           fields: {
@@ -116,6 +116,16 @@ const Home: NextPage = () => {
     {
       onSuccess: (data) => {
         toast.success("Airdrop Successful");
+        toast(() => (
+          <span>
+            NFT link
+            <button
+              onClick={() => window.open(data.response.link, '_blank')}
+            >
+              Open
+            </button>
+          </span>
+        ));
         refetch();
       },
     }
@@ -124,7 +134,7 @@ const Home: NextPage = () => {
   return (
     <Box minH="100vh" w="full" display="flex" bg="#fafafa" flexDir="column">
       <Header />
-
+ 
       <Flex flexDir="column" w="full" fontWeight="500" px="24" py="32">
         <Grid
           bg="gray.100"
@@ -177,6 +187,7 @@ const Home: NextPage = () => {
                     cursor="pointer"
                     onClick={() => {
                       navigator.clipboard.writeText(d.fields.Wallet);
+                      toast.success("Copied to clipboard");
                     }}
                   >
                     {truncate(d.fields.Wallet)}
