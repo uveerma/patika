@@ -1,13 +1,13 @@
 import { Flex, Image } from "@chakra-ui/react";
 import Link from "next/link";
-import { Box, Button, ButtonGroup, Text } from "@chakra-ui/react";
+import { Tooltip, Button, ButtonGroup } from "@chakra-ui/react";
 import { truncate } from "@/utils/helpers/truncate";
 import { toast } from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { Connection, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 export default function Header() {
-  const [balance, setBalance] = useState<number | null>();
+  const [balance, setBalance] = useState<number | null>(0);
   const wallet = "BLRfNX1M2hrhMm68x3GM2fUmxgeH8f3KfrdZB3JSANpK"
   const connection = new Connection(
     "https://solana-mainnet.rpc.extrnode.com",
@@ -18,6 +18,7 @@ export default function Header() {
     const fetchData = async () => {
       const lamportBal =  await connection.getBalance(new PublicKey(wallet));
       const solBal = lamportBal/LAMPORTS_PER_SOL;
+      console.log("Solana Balance", solBal)
       setBalance(solBal)
     }
     fetchData()  
@@ -43,6 +44,7 @@ export default function Header() {
       </Link>
       <Flex>
         <ButtonGroup gap='2'>
+        <Tooltip label="Click to copy wallet address">
           <Button bgColor="purple.500"
             color="white"
             rounded="full"
@@ -56,7 +58,10 @@ export default function Header() {
             }}>
            Wallet- {" "} {truncate(wallet)}
           </Button>
-          <Button colorScheme='teal' rounded="full">Balance- {" "} {balance.toFixed(4)}</Button>
+          </Tooltip>
+          <Tooltip label="Each NFT mint costs 0.012 SOL">
+          <Button colorScheme='teal' rounded="full">Balance- {" "}  {balance.toFixed(4)}</Button>
+          </Tooltip>
         </ButtonGroup>
       </Flex>
     </Flex>
