@@ -96,13 +96,13 @@ const Home: NextPage = () => {
     ["airdropAll"],
     async (d: IParams) => {
       const file = await elementHelper(ref, d.number, d.discord);
-
+      const owner = d.owner.trim();
       const { data } = await axios.post("https://public-api-production.up.railway.app/api/v1/patika", {
-        owner: d.owner,
+        owner: owner,
         uri: file,
       });
 
-      updateMut([
+     updateMut([
         {
           id: d.id,
           fields: {
