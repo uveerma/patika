@@ -116,16 +116,6 @@ const Home: NextPage = () => {
     {
       onSuccess: (data) => {
         toast.success("Airdrop Successful");
-        toast(() => (
-          <span>
-            NFT link
-            <button
-              onClick={() => window.open(data.response.link, '_blank')}
-            >
-              Open
-            </button>
-          </span>
-        ));
         refetch();
       },
     }
