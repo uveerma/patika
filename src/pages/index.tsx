@@ -100,7 +100,6 @@ const Home: NextPage = () => {
       const { data } = await axios.post("https://public-api-production.up.railway.app/api/v1/patika", {
         owner: d.owner,
         uri: file,
-        network: "mainnet",
       });
 
       updateMut([
